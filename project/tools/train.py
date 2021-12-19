@@ -118,6 +118,8 @@ def main():
         # re-set gpu_ids with distributed training mode
         _, world_size = get_dist_info()
         cfg.gpu_ids = range(world_size)
+        if world_size > 5:
+            cfg.gpu_ids = [0,1,2,3,4,6,7]
 
     # create work_dir
     mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))

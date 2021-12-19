@@ -118,9 +118,9 @@ optimizer = dict(
     paramwise_cfg=dict(norm_decay_mult=0., bias_decay_mult=0.))
 optimizer_config = dict(grad_clip=None)
 
-max_epochs = 30
+max_epochs = 100
 num_last_epochs = 30
-resume_from = None
+resume_from = './work_dirs/yolox_ray_s/best_bbox_mAP_epoch_30.pth'
 interval = 1
 
 # learning policy
