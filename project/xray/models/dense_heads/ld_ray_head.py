@@ -6,7 +6,6 @@ from mmdet.core import bbox_overlaps, multi_apply, reduce_mean
 from mmdet.models import HEADS, build_loss
 from mmdet.models.dense_heads import FCOSHead
 
-
 @HEADS.register_module()
 class XRAYHead(FCOSHead):
     """Localization distillation Head. (Short description)
@@ -109,7 +108,6 @@ class XRAYHead(FCOSHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        assert len(cls_scores) == len(bbox_preds) == len(centernesses)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
         all_level_points = self.prior_generator.grid_priors(
             featmap_sizes,
@@ -117,8 +115,8 @@ class XRAYHead(FCOSHead):
             device=bbox_preds[0].device)
         labels, bbox_targets = self.get_targets(all_level_points, gt_bboxes,
                                                 gt_labels)
-
         num_imgs = cls_scores[0].size(0)
+
         # flatten cls_scores, bbox_preds and centerness
         flatten_cls_scores = [
             cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels)
@@ -129,13 +127,14 @@ class XRAYHead(FCOSHead):
             for bbox_pred in bbox_preds
         ]
         flatten_soft_targets = [
-            bbox_pred.permute(0, 2, 3, 1).reshape(-1, 4)
-            for bbox_pred in bbox_preds
+            soft_target.permute(0, 2, 3, 1).reshape(-1, 4)
+            for soft_target in soft_targets
         ]
         flatten_centerness = [
             centerness.permute(0, 2, 3, 1).reshape(-1)
             for centerness in centernesses
         ]
+
         flatten_cls_scores = torch.cat(flatten_cls_scores)
         flatten_bbox_preds = torch.cat(flatten_bbox_preds)
         flatten_soft_targets = torch.cat(flatten_soft_targets)
@@ -145,7 +144,7 @@ class XRAYHead(FCOSHead):
         # repeat points to align with bbox_preds
         flatten_points = torch.cat(
             [points.repeat(num_imgs, 1) for points in all_level_points])
-
+        
         # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
         bg_class_ind = self.num_classes
         pos_inds = ((flatten_labels >= 0)
@@ -161,6 +160,7 @@ class XRAYHead(FCOSHead):
         pos_centerness = flatten_centerness[pos_inds]
         pos_bbox_targets = flatten_bbox_targets[pos_inds]
         pos_soft_targets = flatten_soft_targets[pos_inds]
+        
         pos_centerness_targets = self.centerness_target(pos_bbox_targets)
 
         # centerness weighted iou loss
@@ -175,7 +175,6 @@ class XRAYHead(FCOSHead):
                 pos_points, pos_soft_targets)
             pos_decoded_target_preds = self.bbox_coder.decode(
                 pos_points, pos_bbox_targets)
-
             loss_bbox = self.loss_bbox(
                 pos_decoded_bbox_preds,
                 pos_decoded_target_preds,

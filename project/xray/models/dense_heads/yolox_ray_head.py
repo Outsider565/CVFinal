@@ -93,7 +93,6 @@ class YOLORAYHead(YOLOXHead):
              flatten_objectness.detach(),
              flatten_priors.unsqueeze(0).repeat(num_imgs, 1, 1),
              flatten_bboxes.detach(), gt_bboxes, gt_labels)
-
         # The experimental results show that ‘reduce_mean’ can improve
         # performance on the COCO dataset.
         num_pos = torch.tensor(
