@@ -23,6 +23,7 @@ sdist/
 var/
 wheels/
 *.egg-info/
+core
 .installed.cfg
 *.egg
 MANIFEST
