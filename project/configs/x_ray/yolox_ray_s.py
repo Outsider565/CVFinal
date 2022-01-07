@@ -24,8 +24,6 @@ model = dict(
     # 0.01, and the threshold of the test phase is 0.001.
     test_cfg=dict(score_thr=0.01, nms=dict(type='nms', iou_threshold=0.65)))
 
-load_from = './checkpoints/yolox_s_8x8_300e_coco_20211121_095711-4592a793.pth'
-
 # dataset settings
 data_root = 'data/'
 dataset_type = 'CocoDataset'
@@ -93,7 +91,7 @@ test_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=8,
+    samples_per_gpu=1,
     workers_per_gpu=4,
     persistent_workers=True,
     train=train_dataset,
